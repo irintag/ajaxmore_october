@@ -1,0 +1,115 @@
+use DB;
+use Request;
+use RainLab\Blog\Models\Post as Post;
+use SaurabhDhariwal\Comments\Models\Comment;
+use Nazerke\Homepage\Models\Turistam;
+
+function onStart() { 
+    
+    $this['banner'] = Turistam::where('id', 1)->first();
+    
+    $this['post'] =  Post::where('slug', $this->param('slug'))->first();
+    
+    $tags = $this['post']->tags->pluck('id')->toArray();
+     
+    
+    $this['relatedPost'] = Post::whereHas('tags', function($q) use ($tags) {
+            $q->whereIn('id', $tags);       
+        })->where('published', '1')->orderBy('published_at', 'desc')->paginate(4);
+        
+        
+    $this['lastpost'] = Post::whereHas('categories', function($q) {
+            $q->where('id', 2);       
+        })->where('published', '1')->orderBy('published_at', 'desc')->paginate(5);  
+        
+    $this['comments'] = Comment::where('status', 1)->where('url', 'test/'.$this['post']->slug)->get();     
+     
+    
+}
+
+function onComment() {
+	
+	$author = Input::get('author');
+	$content = Input::get('content');
+	$post_id = Input::get('post_id');
+	
+	$postUrl = Post::where('id', $post_id)->pluck('slug')[0];
+	
+	$url = 'test/'.$postUrl;
+	
+	$comment = new Comment;
+	
+	$comment->author = $author;
+	$comment->content = $content;
+	$comment->url = $url;
+	$comment->status = 2;
+	$comment->save();
+	
+	return [
+        
+        '#input' => "Ваше комментарий отравлен<script></script>" 
+    ];
+	
+}
+
+function onLoadMore() {
+    
+    //onLoadMore
+    
+    $this['lastpost'] = Post::whereHas('categories', function($q) {
+            $q->where('id', 2);       
+        })->where('published', '1')->orderBy('published_at', 'desc')->paginate(5); 
+        
+    $this['banner'] = Turistam::where('id', 1)->first();  
+    
+    $posts =  Post::whereHas('categories', function($q) {
+            $q->where('id', 2);       
+        })->where('published', '1')->orderBy('published_at', 'desc')->get();
+        
+        
+    $posts_Id =  Post::whereHas('categories', function($q) {
+            $q->where('id', 2);       
+        })->where('published', '1')->orderBy('published_at', 'desc')->pluck('id')->toArray();    
+        
+      
+    
+    $postId = Input::get('postid');    
+  
+    //$postId = 20; // $key = 9 count($posts) = 11
+    
+    $key = array_search($postId, $posts_Id);
+    
+    $prevPostNumber = $key + 1;
+    
+    $prevPost = $posts[$prevPostNumber];
+    
+    
+    $this['post'] = $prevPost;
+    
+    $tags = $this['post']->tags->pluck('id')->toArray();
+     
+    
+    $this['relatedPost'] = Post::whereHas('tags', function($q) use ($tags) {
+            $q->whereIn('id', $tags);       
+        })->where('published', '1')->orderBy('published_at', 'desc')->paginate(4);
+    
+    
+    $this['comments'] = Comment::where('status', 1)->where('url', 'test/'.$this['post']->slug)->get();    
+    
+    
+    
+    if ( $prevPostNumber+1 != count($posts) ) {
+        $more_link = '<a data-request="onLoadMore" data-request-data="postid: ' . $prevPost->id . '" href="#">Load More</a>';
+    } else {
+        $more_link = '';
+    }
+    
+    return [
+        
+        '@#all-posts-content' => $this->renderPartial('blogPost/default'),
+        
+        '#load-more-button' => $more_link,
+    ];
+    
+    
+}
