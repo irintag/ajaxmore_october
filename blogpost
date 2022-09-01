@@ -1,0 +1,236 @@
+<div class="all-post">
+        <div class="news_top">
+            <div class="inner_tag">
+                {% for tag in post.tags %}
+                    <a href="/tags/{{tag.slug}}" class="tag" >#{{tag.name}}</a>
+                {% endfor%}       
+            </div>
+            
+            <div class="inner_title">{{post.title}}</div>
+            
+            <div class="article_info">
+                {% if post.author %}{{ post.author }} • {% endif %}
+                {{ post.published_at|date('d.m.Y, H:i') }}
+            </div>
+            
+            <div class="soc_side mb30">
+                <script src="https://yastatic.net/share2/share.js"></script>
+                <div class="ya-share2" data-curtain data-shape="round"  data-color-scheme="whiteblack"  data-services="whatsapp,twitter,telegram"></div>
+            </div>
+            
+            {% if post.featured_images.count %}
+            <div class="news_slider_wrap">
+                <div class="news_images">
+                    {% for image in post.featured_images %}
+                        <a href="{{ image.path }}" data-fancybox="article"><img
+                                data-src="{{ image.filename }}"
+                                src="{{ image.path }}"
+                                alt="{{ image.description }}"
+                                style="max-width: 100%" /></a>
+                    {% endfor %}
+                </div>
+                <div class="descr_slider">
+                    {% set count = post.featured_images|length %}
+                    {% for key,image in post.featured_images %}
+                    {% set key1 = key+1 %}
+                        <div class="descr_slide">
+                            <div class="slide_count">{% partial 'svg/slides' %}<span>{{key1}}/{{count}}</span></div>
+                            <div class="image_text">{{ image.description }}</div>
+                            <div class="image_author">{{image.title}}</div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            {% if post.content_html %}<div class="quote_text">{{ post.content_html|raw }}</div>{% endif %}
+        </div>
+
+        <div class="news_page_flex">
+            <div class="article_side">  
+            
+                <!----------СТАТЬЯ------------>
+                <div class="article_blocks">
+                {% for item in post.blocks %}
+                    <div class="article_block">
+                        <div class="art_minititle">{{item.title}}</div>
+                        {% if item.image %}
+                            <img src="{{item.image|media}}" alt="" class="art-img">
+                            {% if item.img_text or item.img_title %}<div class="img_desc">
+                            {% if item.img_text %}<div class="image_text">{{ item.img_text }}</div>{% endif %}
+                            {% if item.img_title %}<div class="image_author">{{item.img_title}}</div>{% endif %}
+                            </div>{% endif %}
+                        {% endif %}
+                        <div class="art_minitext">{{item.content_html|raw}}</div>
+                    </div>
+                {% endfor %}
+                </div>
+                
+                {% if post.author %}
+                <div class="art_author">
+                    <span>{{post.author}}</span> {% if post.author_text %} — {{post.author_text}}{% endif %}
+                </div>
+                {% endif %}
+                <!----------------------------------->
+                
+                
+                <!----------КОММЕНТАРИИ------------>
+                
+                
+                
+                <div id="input"></div>
+                
+                <div id="wrap-comment-form">
+		            <div id="comment-form"> 
+		                <form data-request="onComment">
+		                	{{ form_token() }}
+		                    <div id="comment_flash_message"></div>
+		                    
+		                    <div id="comment_flash_success"></div>
+		                    
+		                    <div class="comm_in">
+		                         <input type="text" class="author_field  comm_field " name="author" placeholder="{{ 'Ваше имя'|_ }}" required>
+		                            
+		                        
+		                        <div class="subwrap">
+		                            <textarea name="content" class="comm_field" placeholder="{{ 'Комментарий'|_ }}"></textarea>
+		                            <input type="submit" class="df-btn blue-btn"   value="{{ 'ОТПРАВИТЬ'|_ }}">
+		                        </div>
+		                        
+		                        
+		                        <input name="post_id" type="hidden" value="{{post.id}}">
+		            
+		                        
+		                    </div> 
+		                    
+		    
+		         
+		                </form>
+		            </div>
+		        </div> 
+                
+                
+                
+                
+                
+                
+                
+                
+               <div id="comments-content">
+
+    <div class="comments-count_wrap">
+        {{'Комментарии'|_}} <span id="comments-count">{{comments.count }}</span>
+    </div>
+     
+    
+    
+    
+    
+    
+    <div class="comments mb-100px">
+        <ul>
+            {% for post in comments %}
+                <li>
+                    <div class="comment" id="comment-{{post.id}}">
+                        <div class="comment-content">
+                            <div class="comment-header">
+                                <div class="comment-name">{{post.name}}</div>
+                                <div class="comment-date" href="#comment-{{post.id}}">
+                                    {{post.created_at.diffForHumans}}
+                                </div>
+                            </div>
+                            <div class="comment-body">{{post.content|raw}}</div>
+                             <div class="comment-footer">
+                           <!--  <a class="comment-reply" onclick="Comment.replay(event,'{{post.id}}')">Ответить</a> -->
+                            </div> 
+                            
+                            {% if post.answer %}
+                                <div class="comm-answer">
+                                    <div class="comm-answer_head">
+                                        {{'Ответ от администратора'|_}}
+                                    </div>
+                                    <div class="comm-answer_body">
+                                        {{post.answer|raw}}
+                                    </div>
+                                </div>
+                            {% endif %}
+                            
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                
+                    
+                </li>
+           {% endfor %}
+        </ul>
+    </div>
+</div>
+
+
+ 
+                <!---------   / Комментарии-------------------------->
+                
+                
+                
+                
+                <!----------ЧИТАЙТЕ ТАКЖЕ------------>
+                <div class="tag_relateds_wrap">
+                    <div class="bor_top title blue mb65">ЧИТАЙТЕ ТАКЖЕ</div>
+                    <div class="tag_relateds grid gap32">
+                     
+                        {% for post3 in relatedPost %}
+                        <div class="related_item">
+                            {% if post3.featured_images.count %}
+                                {% for image in post3.featured_images|slice(0,1) %}
+                                    <img class="news_img" data-src="{{ image.filename }}" src="{{ image.thumb(368,326,{"mode":"crop"}) }}" alt="{{ image.description }}" style="max-width: 100%" />
+                                {% endfor %}
+                            {% endif %}
+                            <div class="rel_tag">
+                                {% for tag in post3.tags|slice(0,1) %}
+                                    <a href="/tags/{{tag.slug}}" class="tag" style="color:{{tag.color}}"><span>{{tag.name}}</span></a>
+                                {% endfor%}
+                            </div>
+                            <a href="{{post3.url}}" class="news_title">{{post3.title}}</a>
+                            <div class="news_time">{{ post3.published_at|date('d.m.Y') }} - {{ post3.author }}</div>
+                            <div class="prevtext">{{ str_words(post.content, 20) }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <!----------------------------------->
+                
+                
+                
+                
+            </div>
+            <div class="related_side">
+              
+                <div class="relat_head">ЛЕНТА НОВОСТЕЙ</div>
+                <div class="relat_list">
+                    {% for post1 in lastpost %}
+                        <div class="news_art flex">
+                            {% if post1.featured_images.count %}
+                                {% for image in post1.featured_images|slice(0,1) %}
+                                    <img class="news_img" data-src="{{ image.filename }}" src="{{ image.thumb(368,326,{"mode":"crop"}) }}" alt="{{ image.description }}" style="max-width: 100%" />
+                                {% endfor %}
+                            {% endif %}
+                            <div class="news_prev">
+                                <a href="{{post1.slug}}" class="news_title">{{post1.title}}</a>
+                                <div class="news_time">{{ post1.published_at|date('H:i') }}</div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <a href="{{'novosti'|page}}" class="blue_btn all_news">ВСЕ НОВОСТИ</a>
+                
+                <div class="banner_wrapper {% if banner.title %}dark{% endif %} art_reklama">
+                    <img src="{{banner.image3|media}}" alt="" class="banner">
+                    {% if banner.title3 %}
+                        <div class="banner_text">
+                                <div class="banner_title">{{banner.title3}}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            </div>
+            </div>
